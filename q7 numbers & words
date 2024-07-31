@@ -1,0 +1,91 @@
+%{
+#include <stdio.h>
+%}
+
+/* Define patterns for numbers and words */
+NUMBER    [0-9]+
+WORD      [a-zA-Z]+
+
+%%
+
+{NUMBER}  { printf("NUMBER: %s\n", yytext); }
+{WORD}    { printf("WORD: %s\n", yytext); }
+
+%%
+
+int main() {
+    yylex(); // Call the lexical analyzer
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX_LENGTH 1000
+
+void separateNumbersAndWords(const char *statement, char *numbers, char *words) {
+    int numIndex = 0, wordIndex = 0;
+    int inNumber = 0, inWord = 0;
+
+    for (int i = 0; i < strlen(statement); i++) {
+        char ch = statement[i];
+
+        if (isdigit(ch)) {
+            if (!inNumber) {
+                if (inWord) {
+                    words[wordIndex++] = ' ';
+                    inWord = 0;
+                }
+                inNumber = 1;
+            }
+            numbers[numIndex++] = ch;
+        } else if (isalpha(ch)) {
+            if (!inWord) {
+                if (inNumber) {
+                    numbers[numIndex++] = ' ';
+                    inNumber = 0;
+                }
+                inWord = 1;
+            }
+            words[wordIndex++] = ch;
+        } else {
+            if (inNumber) {
+                numbers[numIndex++] = ' ';
+                inNumber = 0;
+            }
+            if (inWord) {
+                words[wordIndex++] = ' ';
+                inWord = 0;
+            }
+        }
+    }
+    
+    if (inNumber) numbers[numIndex++] = '\0'; // End of number list
+    else numbers[numIndex] = '\0';           // Null-terminate the string
+    if (inWord) words[wordIndex++] = '\0';   // End of word list
+    else words[wordIndex] = '\0';           // Null-terminate the string
+}
+
+int main() {
+    char statement[MAX_LENGTH];
+    char numbers[MAX_LENGTH] = {0};
+    char words[MAX_LENGTH] = {0};
+
+    printf("Enter a statement: ");
+    fgets(statement, sizeof(statement), stdin);
+    
+    // Remove newline character if present
+    size_t len = strlen(statement);
+    if (len > 0 && statement[len - 1] == '\n') {
+        statement[len - 1] = '\0';
+    }
+
+    separateNumbersAndWords(statement, numbers, words);
+
+    printf("Numbers: %s\n", numbers);
+    printf("Words: %s\n", words);
+
+    return 0;
+}
+
