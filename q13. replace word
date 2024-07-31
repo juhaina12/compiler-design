@@ -1,0 +1,106 @@
+%{
+#include <stdio.h>
+#include <string.h>
+
+#define WORD_TO_REPLACE "foo"
+#define REPLACEMENT_WORD "bar"
+%}
+
+%%
+{WORD_TO_REPLACE} { printf("%s", REPLACEMENT_WORD); }
+.|\n           { putchar(yytext[0]); }
+%%
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            perror("fopen");
+            return 1;
+        }
+        yyin = file;
+    }
+
+    yylex();
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_LINE_LENGTH 1024
+
+// Function to replace occurrences of a word in a string
+void replaceWordInString(char *str, const char *oldWord, const char *newWord) {
+    char buffer[MAX_LINE_LENGTH];
+    char *pos;
+    int oldWordLen = strlen(oldWord);
+    int newWordLen = strlen(newWord);
+    int bufferLen = 0;
+
+    // Continue searching for oldWord in str
+    while ((pos = strstr(str, oldWord)) != NULL) {
+        // Copy the part before oldWord
+        bufferLen = pos - str;
+        strncpy(buffer, str, bufferLen);
+        buffer[bufferLen] = '\0';
+
+        // Append the newWord to buffer
+        strcat(buffer, newWord);
+
+        // Append the part after oldWord
+        strcat(buffer, pos + oldWordLen);
+
+        // Copy buffer back to str
+        strcpy(str, buffer);
+    }
+}
+
+// Function to replace word in a file
+void replaceWordInFile(const char *filename, const char *oldWord, const char *newWord) {
+    FILE *file = fopen(filename, "r+");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[MAX_LINE_LENGTH];
+    fseek(file, 0, SEEK_SET); // Move to the beginning of the file
+    long pos;
+
+    while ((pos = ftell(file)) >= 0 && fgets(line, sizeof(line), file)) {
+        // Replace oldWord with newWord in the current line
+        replaceWordInString(line, oldWord, newWord);
+
+        // Move to the beginning of the line to overwrite it
+        fseek(file, pos, SEEK_SET);
+        fprintf(file, "%s", line);
+
+        // Move to the next line
+        fseek(file, pos + strlen(line), SEEK_SET);
+    }
+
+    fclose(file);
+}
+
+int main() {
+    char filename[256];
+    char oldWord[256];
+    char newWord[256];
+
+    printf("Enter the filename: ");
+    scanf("%255s", filename);
+
+    printf("Enter the word to replace: ");
+    scanf("%255s", oldWord);
+
+    printf("Enter the new word: ");
+    scanf("%255s", newWord);
+
+    replaceWordInFile(filename, oldWord, newWord);
+
+    printf("Replacement complete.\n");
+
+    return 0;
+}
