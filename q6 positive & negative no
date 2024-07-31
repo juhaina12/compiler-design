@@ -1,0 +1,55 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+int positive_count = 0;
+int negative_count = 0;
+%}
+
+%%
+
+[0-9]+        { positive_count++; }
+-[0-9]+       { negative_count++; }
+\n            { /* Ignore newline characters */ }
+.             { /* Ignore all other characters */ }
+
+%%
+
+int main(int argc, char **argv) {
+    yylex();  // Start scanning the input
+    printf("Number of positive numbers: %d\n", positive_count);
+    printf("Number of negative numbers: %d\n", negative_count);
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+
+int main() {
+    int number;
+    int positiveCount = 0, negativeCount = 0;
+
+    printf("Enter numbers (0 to stop):\n");
+
+    while (1) {
+        printf("Enter a number: ");
+        scanf("%d", &number);
+
+        // Check for the sentinel value to stop the input
+        if (number == 0) {
+            break;
+        }
+        
+        // Count positive and negative numbers
+        if (number > 0) {
+            positiveCount++;
+        } else if (number < 0) {
+            negativeCount++;
+        }
+    }
+
+    // Display the results
+    printf("Number of positive numbers: %d\n", positiveCount);
+    printf("Number of negative numbers: %d\n", negativeCount);
+
+    return 0;
+}
