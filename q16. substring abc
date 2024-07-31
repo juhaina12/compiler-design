@@ -1,0 +1,64 @@
+%{
+#include <stdio.h>
+#include <string.h>
+%}
+
+%%
+abc     { printf("ABC"); }
+.       { putchar(yytext[0]); }
+%%
+
+int main(int argc, char **argv) {
+    yylex();
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_LENGTH 1000
+
+// Function to replace occurrences of a substring with another substring
+void replaceSubstring(char *str, const char *oldSub, const char *newSub) {
+    char buffer[MAX_LENGTH];
+    char *pos;
+    int oldSubLen = strlen(oldSub);
+    int newSubLen = strlen(newSub);
+    int bufferLen = 0;
+
+    while ((pos = strstr(str, oldSub)) != NULL) {
+        // Copy the part before oldSub
+        bufferLen = pos - str;
+        strncpy(buffer, str, bufferLen);
+        buffer[bufferLen] = '\0';
+
+        // Append the newSub to buffer
+        strcat(buffer, newSub);
+
+        // Append the part after oldSub
+        strcat(buffer, pos + oldSubLen);
+
+        // Copy buffer back to str
+        strcpy(str, buffer);
+    }
+}
+
+int main() {
+    char input[MAX_LENGTH];
+
+    printf("Enter a string: ");
+    fgets(input, sizeof(input), stdin);
+
+    // Remove newline character if present
+    size_t len = strlen(input);
+    if (len > 0 && input[len - 1] == '\n') {
+        input[len - 1] = '\0';
+    }
+
+    // Replace all occurrences of "abc" with "ABC"
+    replaceSubstring(input, "abc", "ABC");
+
+    printf("Modified string: %s\n", input);
+
+    return 0;
+}
