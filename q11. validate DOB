@@ -1,0 +1,120 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+// Helper function to check if a number is within a given range
+int is_in_range(int num, int min, int max) {
+    return (num >= min && num <= max);
+}
+
+// Helper function to check if a date is valid
+int is_valid_date(int day, int month, int year) {
+    // Days per month (not accounting for leap years)
+    int days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    
+    // Check for leap year and adjust February days
+    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+        days_in_month[1] = 29;
+    }
+
+    // Validate month and day
+    if (is_in_range(month, 1, 12) && is_in_range(day, 1, days_in_month[month - 1])) {
+        return 1;
+    }
+    return 0;
+}
+%}
+
+%%
+
+[0-3][0-9]/[0-1][0-9]/[0-9][0-9][0-9][0-9] {
+    int day = atoi(yytext);
+    int month = atoi(yytext + 3);
+    int year = atoi(yytext + 6);
+
+    if (is_valid_date(day, month, year)) {
+        printf("Valid DOB: %s\n", yytext);
+    } else {
+        printf("Invalid DOB: %s\n", yytext);
+    }
+}
+
+.|\n {
+    // Ignore other characters and newlines
+}
+
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Function to check if a year is a leap year
+bool isLeapYear(int year) {
+    if (year % 4 == 0) {
+        if (year % 100 == 0) {
+            if (year % 400 == 0) {
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+// Function to check if a given date is valid
+bool isValidDate(int day, int month, int year) {
+    // Check year range
+    if (year < 1900 || year > 2100) {
+        return false;
+    }
+
+    // Check month range
+    if (month < 1 || month > 12) {
+        return false;
+    }
+
+    // Days in each month
+    int daysInMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    // Adjust for leap year
+    if (isLeapYear(year)) {
+        daysInMonth[1] = 29;
+    }
+
+    // Check day range
+    if (day < 1 || day > daysInMonth[month - 1]) {
+        return false;
+    }
+
+    return true;
+}
+
+int main() {
+    char dateStr[11];
+    int day, month, year;
+
+    printf("Enter date of birth (dd/mm/yyyy): ");
+    fgets(dateStr, sizeof(dateStr), stdin);
+
+    // Parse the input date string
+    if (sscanf(dateStr, "%d/%d/%d", &day, &month, &year) != 3) {
+        printf("Invalid format. Please enter date in dd/mm/yyyy format.\n");
+        return 1;
+    }
+
+    // Validate the date
+    if (isValidDate(day, month, year)) {
+        printf("The date of birth is valid.\n");
+    } else {
+        printf("The date of birth is not valid.\n");
+    }
+
+    return 0;
+}
