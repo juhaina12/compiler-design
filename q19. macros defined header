@@ -1,0 +1,49 @@
+%{
+#include <stdio.h>
+
+int macro_count = 0;
+int header_count = 0;
+%}
+
+%%
+"/*"[^*]*\*+([^/*][^*]*\*+)*/   { /* Ignore multi-line comments */ }
+"//".*          { /* Ignore single-line comments */ }
+"#define"       { macro_count++; }
+"#include"      { header_count++; }
+.|\n            { /* Ignore other characters */ }
+%%
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            fprintf(stderr, "Cannot open file %s\n", argv[1]);
+            return 1;
+        }
+        yyin = file;
+    }
+
+    yylex();
+
+    if (argc > 1) {
+        fclose(yyin);
+    }
+
+    printf("Number of macros defined: %d\n", macro_count);
+    printf("Number of header files included: %d\n", header_count);
+
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+C PRO:
+#define PI 3.14   
+#include<stdio.h> 
+#include<conio.h>
+ void main()
+{
+int a,b,c = 30;
+printf("hello");
+}
