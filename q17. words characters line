@@ -1,0 +1,68 @@
+%{
+#include <stdio.h>
+#include <string.h>
+
+int char_count = 0;
+int line_count = 0;
+int word_count = 0;
+int in_word = 0;
+
+void count_characters(const char *yytext) {
+    char_count += strlen(yytext);
+}
+
+void count_words() {
+    if (in_word == 0) {
+        in_word = 1;
+        word_count++;
+    }
+}
+
+%}
+
+%%
+[ \t\n]+        { /* Ignore spaces, tabs, and new lines */ }
+"/*"[^*]*\*+([^/*][^*]*\*+)*/   { /* Ignore multi-line comments */ }
+"//".*          { /* Ignore single-line comments */ }
+[a-zA-Z_][a-zA-Z0-9_]*  { count_words(); count_characters(yytext); }
+.               { count_characters(yytext); }
+\n              { line_count++; in_word = 0; }
+%%
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            fprintf(stderr, "Cannot open file %s\n", argv[1]);
+            return 1;
+        }
+        yyin = file;
+    }
+
+    yylex();
+
+    if (argc > 1) {
+        fclose(yyin);
+    }
+
+    printf("Number of characters: %d\n", char_count);
+    printf("Number of lines: %d\n", line_count);
+    printf("Number of words: %d\n", word_count);
+
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+C PRO:
+ #include <stdio.h>
+ int main() 
+ {    
+  int number1, number2, sum;
+ printf("Enter two integers: ");
+ scanf("%d %d", &number1, &number2);
+ sum = number1 + number2;      
+ printf("%d + %d = %d", number1, number2, sum);
+  return 0;
+ }
