@@ -1,0 +1,91 @@
+%{
+#include <stdio.h>
+#include <ctype.h>
+%}
+
+%%
+
+[ \t\n]+                  ; // Ignore whitespace (spaces, tabs, newlines)
+if|else|while|for|return  { printf("Keyword: %s\n", yytext); }
+==|!=|<|>|<=|>=           { printf("Relational operator: %s\n", yytext); }
+[a-zA-Z_][a-zA-Z_0-9]*    { printf("Word: %s\n", yytext); }
+.                         { /* Ignore other characters */ }
+
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+C PRO:
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_LENGTH 1000
+
+// Function to check if a string is a relational operator
+int isRelationalOperator(const char *str) {
+    return (strcmp(str, "==") == 0 || strcmp(str, "!=") == 0 ||
+            strcmp(str, "<") == 0 || strcmp(str, ">") == 0 ||
+            strcmp(str, "<=") == 0 || strcmp(str, ">=") == 0);
+}
+
+// Function to process input and recognize words and relational operators
+void processInput(const char *input) {
+    char word[MAX_LENGTH];
+    int wordIndex = 0;
+
+    printf("Words:\n");
+    printf("Relational Operators:\n");
+
+    for (int i = 0; i <= strlen(input); i++) {
+        char ch = input[i];
+        
+        if (isalnum(ch) || ch == '_') { // Building a word
+            word[wordIndex++] = ch;
+        } else {
+            if (wordIndex > 0) {
+                word[wordIndex] = '\0';
+                if (isRelationalOperator(word)) {
+                    printf("%s (Relational Operator)\n", word);
+                } else {
+                    printf("%s (Word)\n", word);
+                }
+                wordIndex = 0;
+            }
+
+            // Handle relational operators separately
+            if (ch == '=' && input[i + 1] == '=') {
+                printf("== (Relational Operator)\n");
+                i++; // Skip the next '='
+            } else if (ch == '!' && input[i + 1] == '=') {
+                printf("!= (Relational Operator)\n");
+                i++; // Skip the next '='
+            } else if (ch == '<' || ch == '>' || ch == '=' || ch == '!') {
+                printf("%c (Relational Operator)\n", ch);
+            }
+        }
+    }
+}
+
+int main() {
+    char input[MAX_LENGTH];
+
+    printf("Enter a statement: ");
+    fgets(input, sizeof(input), stdin);
+
+    // Remove newline character if present
+    size_t len = strlen(input);
+    if (len > 0 && input[len - 1] == '\n') {
+        input[len - 1] = '\0';
+    }
+
+    processInput(input);
+
+    return 0;
+}
