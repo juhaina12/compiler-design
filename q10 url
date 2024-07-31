@@ -1,0 +1,129 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
+%}
+
+%%
+^(http|https)://
+    {
+        BEGIN(HTTP_URL);
+        printf("URL Scheme: %s\n", yytext);
+    }
+
+<HTTP_URL>^[a-zA-Z0-9\-\.]+
+    {
+        printf("Domain Name: %s\n", yytext);
+    }
+
+<HTTP_URL>^[a-zA-Z0-9\-\.]+
+    {
+        printf("Domain: %s\n", yytext);
+    }
+
+<HTTP_URL>^[/:]
+    {
+        printf("Path Separator: %s\n", yytext);
+    }
+
+<HTTP_URL>^[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=]+
+    {
+        printf("Path or Query: %s\n", yytext);
+    }
+
+<HTTP_URL>^[ \t\r\n]+
+    {
+        // Ignore whitespace
+    }
+
+<HTTP_URL>.   // Handle any other character
+    {
+        printf("Invalid URL character: %s\n", yytext);
+        yyerror("Invalid character in URL.");
+    }
+%%
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            perror("Error opening file");
+            exit(1);
+        }
+        yyin = file;
+    }
+    yylex();
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_URL_LENGTH 2048
+
+// Function to check if the URL starts with a valid scheme (http:// or https://)
+int hasValidScheme(const char *url) {
+    return (strstr(url, "http://") == url || strstr(url, "https://") == url);
+}
+
+// Function to check if the URL contains a valid domain
+int hasValidDomain(const char *url) {
+    const char *domain = url;
+    
+    // Skip past the scheme
+    if (strstr(url, "http://") == url) {
+        domain += 7;
+    } else if (strstr(url, "https://") == url) {
+        domain += 8;
+    }
+    
+    // Check if there's a domain after the scheme
+    if (*domain == '\0' || *domain == '/') {
+        return 0;
+    }
+
+    // Check if domain contains at least one dot (.)
+    if (strchr(domain, '.') == NULL) {
+        return 0;
+    }
+
+    return 1;
+}
+
+// Function to validate the URL
+int isValidURL(const char *url) {
+    if (strlen(url) == 0 || strlen(url) > MAX_URL_LENGTH) {
+        return 0;
+    }
+
+    if (!hasValidScheme(url) || !hasValidDomain(url)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+int main() {
+    char url[MAX_URL_LENGTH];
+
+    printf("Enter a URL: ");
+    fgets(url, sizeof(url), stdin);
+
+    // Remove newline character if present
+    size_t len = strlen(url);
+    if (len > 0 && url[len - 1] == '\n') {
+        url[len - 1] = '\0';
+    }
+
+    if (isValidURL(url)) {
+        printf("The URL is valid.\n");
+    } else {
+        printf("The URL is not valid.\n");
+    }
+
+    return 0;
+}
