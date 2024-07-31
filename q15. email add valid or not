@@ -1,0 +1,62 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+
+%%
+
+^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$   { printf("Valid email address.\n"); }
+.|\n                                           { /* Ignore other characters */ }
+
+%%
+
+int main(int argc, char **argv) {
+    yylex();
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+
+// Function to check if the email address is valid
+bool isValidEmail(const char *email) {
+    int atCount = 0;
+    bool hasDot = false;
+    
+    // Check if the email is empty
+    if (strlen(email) == 0) {
+        return false;
+    }
+
+    // Check the email structure
+    for (int i = 0; i < strlen(email); i++) {
+        if (email[i] == '@') {
+            atCount++;
+        } else if (email[i] == '.') {
+            hasDot = true;
+        }
+    }
+    
+    // Valid email must contain exactly one '@' and at least one '.'
+    if (atCount == 1 && hasDot) {
+        return true;
+    }
+
+    return false;
+}
+
+int main() {
+    char email[256];
+
+    printf("Enter email address: ");
+    scanf("%255s", email);
+
+    if (isValidEmail(email)) {
+        printf("The email address is valid.\n");
+    } else {
+        printf("The email address is not valid.\n");
+    }
+
+    return 0;
+}
