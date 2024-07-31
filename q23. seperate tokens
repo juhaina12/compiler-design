@@ -1,0 +1,102 @@
+%{
+#include <stdio.h>
+#include <string.h>
+
+// Define token types
+enum {
+    KEYWORD,
+    IDENTIFIER,
+    CONSTANT,
+    STRING_LITERAL,
+    PUNCTUATOR,
+    OPERATOR
+};
+
+void print_token(const char* token, int type);
+
+%}
+
+// Define keywords
+%{
+const char* keywords[] = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do",
+    "double", "else", "enum", "extern", "float", "for", "goto", "if",
+    "int", "long", "register", "return", "short", "signed", "sizeof",
+    "static", "struct", "switch", "typedef", "union", "unsigned", "void",
+    "volatile", "while", NULL
+};
+
+int is_keyword(const char* str) {
+    for (int i = 0; keywords[i] != NULL; i++) {
+        if (strcmp(str, keywords[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+%}
+
+%%
+[ \t\n]+           /* ignore whitespace */
+"//".*             /* ignore single-line comments */
+"/*"[^*]*\*+([^/*][^*]*\*+)*"/"    /* ignore multi-line comments */
+\"([^\\\n]|(\\.))*?\"              { print_token(yytext, STRING_LITERAL); }
+0[xX][0-9a-fA-F]+                  { print_token(yytext, CONSTANT); }
+[0-9]+("."[0-9]*)?([eE][+-]?[0-9]+)?    { print_token(yytext, CONSTANT); }
+[A-Za-z_][A-Za-z0-9_]* {
+    if (is_keyword(yytext)) {
+        print_token(yytext, KEYWORD);
+    } else {
+        print_token(yytext, IDENTIFIER);
+    }
+}
+[~!%^&*()\-+=|\\{}[\]:;\"'<>,.?/]  { print_token(yytext, PUNCTUATOR); }
+.                                  { print_token(yytext, OPERATOR); }
+
+%%
+
+void print_token(const char* token, int type) {
+    switch (type) {
+        case KEYWORD:
+            printf("Keyword: %s\n", token);
+            break;
+        case IDENTIFIER:
+            printf("Identifier: %s\n", token);
+            break;
+        case CONSTANT:
+            printf("Constant: %s\n", token);
+            break;
+        case STRING_LITERAL:
+            printf("String Literal: %s\n", token);
+            break;
+        case PUNCTUATOR:
+            printf("Punctuator: %s\n", token);
+            break;
+        case OPERATOR:
+            printf("Operator: %s\n", token);
+            break;
+        default:
+            printf("Unknown: %s\n", token);
+            break;
+    }
+}
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            perror("Failed to open file");
+            return 1;
+        }
+        yyin = file;
+    }
+    yylex();
+    return 0;
+}
+C PRO:
+#include<stdio.h> 
+void main()
+{
+int a,b,c = 30; 
+printf("hello");
+}
