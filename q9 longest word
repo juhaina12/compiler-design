@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_WORD_LENGTH 1000
+
+int maxLength = 0;
+int currentLength = 0;
+char longestWord[MAX_WORD_LENGTH + 1];
+%}
+
+%%
+[a-zA-Z]+  {
+                currentLength = yyleng;
+                if (currentLength > maxLength) {
+                    maxLength = currentLength;
+                    strncpy(longestWord, yytext, currentLength);
+                    longestWord[currentLength] = '\0';
+                }
+            }
+
+\n|\r\n|\r   { /* Ignore newlines and carriage returns */ }
+.           { /* Ignore other characters */ }
+%%
+
+int main(int argc, char **argv) {
+    yylex();
+    printf("Longest word length: %d\n", maxLength);
+    printf("Longest word: %s\n", longestWord);
+    return 0;
+}
+C PRO:
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX_LENGTH 1000
+
+int main() {
+    char sentence[MAX_LENGTH];
+    char longestWord[MAX_LENGTH];
+    int maxLength = 0;
+    int currentLength = 0;
+    char currentWord[MAX_LENGTH];
+    
+    printf("Enter a sentence: ");
+    fgets(sentence, sizeof(sentence), stdin);
+    
+    // Remove newline character if present
+    size_t len = strlen(sentence);
+    if (len > 0 && sentence[len - 1] == '\n') {
+        sentence[len - 1] = '\0';
+    }
+    
+    // Iterate through each character in the sentence
+    for (int i = 0; i <= len; i++) {
+        if (isalpha(sentence[i])) {
+            currentWord[currentLength++] = sentence[i];
+        } else {
+            // End of the current word
+            if (currentLength > 0) {
+                currentWord[currentLength] = '\0';
+                if (currentLength > maxLength) {
+                    maxLength = currentLength;
+                    strcpy(longestWord, currentWord);
+                }
+                currentLength = 0;
+            }
+        }
+    }
+
+    // Check the last word if there was no trailing space
+    if (currentLength > 0) {
+        currentWord[currentLength] = '\0';
+        if (currentLength > maxLength) {
+            maxLength = currentLength;
+            strcpy(longestWord, currentWord);
+        }
+    }
+
+    printf("The longest word is: %s\n", longestWord);
+    printf("Length of the longest word: %d\n", maxLength);
+
+    return 0;
+}
